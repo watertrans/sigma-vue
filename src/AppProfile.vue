@@ -19,16 +19,21 @@
 </template>
 
 <script>
+import { reactive, toRefs } from '@vue/reactivity';
 	export default {
-		data() {
-			return {
-				expanded: false
-			}
-		},
-		methods: {
-			onClick(event){
-				this.expanded = !this.expanded;
+		setup() {
+			const state = reactive({
+				expanded: false,
+			});
+
+			const onClick = (event) => {
+				state.expanded = !state.expanded;
 				event.preventDefault();
+			};
+
+			return {
+				...toRefs(state),
+				onClick
 			}
 		}
 	}

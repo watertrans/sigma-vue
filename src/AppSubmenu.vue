@@ -26,22 +26,15 @@
 	</ul>
 </template>
 <script>
+import { reactive, toRefs } from '@vue/reactivity';
 export default {
 	name: 'appsubmenu',
-	props: {
-		items: Array,
-		root: {
-			type: Boolean,
-			default: false
-		}
-	},
-	data() {
-		return {
+	setup(props, context) {
+		const state = reactive({
 			activeIndex : null
-		}
-	},
-	methods: {
-		onMenuItemClick(event, item, index) {
+		})
+
+		const onMenuItemClick = (event, item, index) => {
 			if (item.disabled) {
 				event.preventDefault();
 				return;
@@ -56,15 +49,29 @@ export default {
                 item.command({originalEvent: event, item: item});
 			}
 
-			this.activeIndex = index === this.activeIndex ? null : index;
+			state.activeIndex = index === state.activeIndex ? null : index;
 
-			this.$emit('menuitem-click', {
+			context.emit('menuitem-click', {
 				originalEvent: event,
 				item: item
 			});
-		},
-		visible(item) {
+		};
+
+		const visible = (item) => {
 			return (typeof item.visible === 'function' ? item.visible() : item.visible !== false);
+		};
+
+		return {
+			...toRefs(state),
+			onMenuItemClick,
+			visible,
+		}
+	},
+	props: {
+		items: Array,
+		root: {
+			type: Boolean,
+			default: false
 		}
 	}
 }

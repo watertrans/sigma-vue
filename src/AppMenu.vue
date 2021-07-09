@@ -8,14 +8,18 @@
 import AppSubmenu from './AppSubmenu';
 
 export default {
+	setup(props, context) {
+		const onMenuItemClick = (event) => {
+            context.emit('menuitem-click', event);
+        }
+
+		return {
+			onMenuItemClick,
+		}
+	},
 	props: {
 		model: Array
 	},
-    methods: {
-        onMenuItemClick(event) {
-            this.$emit('menuitem-click', event);
-        }
-    },
 	components: {
 		'AppSubmenu': AppSubmenu
 	}

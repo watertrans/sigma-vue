@@ -195,4 +195,7 @@ app.component('Tree', Tree);
 app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 
+app.provide('appState', app.config.globalProperties.$appState);
+app.provide('toast', app.config.globalProperties.$toast);
+
 app.mount('#app');

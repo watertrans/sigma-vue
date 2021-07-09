@@ -27,10 +27,14 @@
 
 <script>
 export default {
-    methods: {
-        onMenuToggle(event) {
-            this.$emit('menu-toggle', event);
+	setup(props, context) {
+		const onMenuToggle = (event) => {
+            context.emit('menu-toggle', event);
         }
-    }
+
+		return {
+			onMenuToggle
+		}
+	}
 }
 </script>

@@ -1,9 +1,9 @@
 <template>
-	<div :class="containerClass" @click="onWrapperClick">
+	<div :class="containerClass()" @click="onWrapperClick">
 		<AppTopBar @menu-toggle="onMenuToggle" />
 
         <transition name="layout-sidebar">
-            <div :class="sidebarClass" @click="onSidebarClick" v-show="isSidebarVisible()">
+            <div :class="sidebarClass()" @click="onSidebarClick" v-show="isSidebarVisible()">
                 <div class="layout-logo">
                     <router-link to="/">
                         <img alt="Logo" :src="logo" />
@@ -31,10 +31,20 @@ import AppProfile from './AppProfile.vue';
 import AppMenu from './AppMenu.vue';
 import AppConfig from './AppConfig.vue';
 import AppFooter from './AppFooter.vue';
+import { useRoute } from 'vue-router'
+import { onBeforeUpdate, watch, inject } from 'vue';
+import { reactive, toRefs } from '@vue/reactivity';
+import { usePrimeVue } from 'primevue/config';
 
 export default {
-    data() {
-        return {
+    setup() {
+        
+        const primevue = usePrimeVue();
+        const appState = inject('appState');
+        const toast = inject('toast');
+        const route = useRoute();
+
+        const state = reactive({
             layoutMode: 'static',
             layoutColorMode: 'dark',
             staticMenuInactive: false,
@@ -132,116 +142,143 @@ export default {
                 {label: 'Documentation', icon: 'pi pi-fw pi-question', command: () => {window.location = "#/documentation"}},
                 {label: 'View Source', icon: 'pi pi-fw pi-search', command: () => {window.location = "https://github.com/primefaces/sigma-vue"}}
             ]
-        }
-    },
-    watch: {
-        $route() {
-            this.menuActive = false;
-            this.$toast.removeAllGroups();
-        }
-    },
-    methods: {
-        onWrapperClick() {
-            if (!this.menuClick) {
-                this.overlayMenuActive = false;
-                this.mobileMenuActive = false;
+        });
+
+        watch(route, () => {
+            state.menuActive = false;
+            toast.removeAllGroups();
+        });
+
+        const onWrapperClick = () => {
+            if (!state.menuClick) {
+                state.overlayMenuActive = false;
+                state.mobileMenuActive = false;
             }
 
-            this.menuClick = false;
-        },
-        onMenuToggle() {
-            this.menuClick = true;
+            state.menuClick = false;
+        };
 
-            if (this.isDesktop()) {
-                if (this.layoutMode === 'overlay') {
-					if(this.mobileMenuActive === true) {
-						this.overlayMenuActive = true;
+        const onMenuToggle = (event) => {
+            state.menuClick = true;
+
+            if (isDesktop()) {
+                if (state.layoutMode === 'overlay') {
+					if(state.mobileMenuActive === true) {
+						state.overlayMenuActive = true;
 					}
 
-                    this.overlayMenuActive = !this.overlayMenuActive;
-					this.mobileMenuActive = false;
+                    state.overlayMenuActive = !state.overlayMenuActive;
+					state.mobileMenuActive = false;
                 }
-                else if (this.layoutMode === 'static') {
-                    this.staticMenuInactive = !this.staticMenuInactive;
+                else if (state.layoutMode === 'static') {
+                    state.staticMenuInactive = !state.staticMenuInactive;
                 }
             }
             else {
-                this.mobileMenuActive = !this.mobileMenuActive;
+                state.mobileMenuActive = !state.mobileMenuActive;
             }
 
             event.preventDefault();
-        },
-        onSidebarClick() {
-            this.menuClick = true;
-        },
-        onMenuItemClick(event) {
+        };
+
+        const onSidebarClick = () => {
+            state.menuClick = true;
+        };
+
+        const onMenuItemClick = (event) => {
             if (event.item && !event.item.items) {
-                this.overlayMenuActive = false;
-                this.mobileMenuActive = false;
+                state.overlayMenuActive = false;
+                state.mobileMenuActive = false;
             }
-        },
-		onLayoutChange(layoutMode) {
-			this.layoutMode = layoutMode;
-		},
-		onLayoutColorChange(layoutColorMode) {
-			this.layoutColorMode = layoutColorMode;
-		},
-        addClass(element, className) {
+        };
+
+		const onLayoutChange = (layoutMode) => {
+			state.layoutMode = layoutMode;
+		};
+
+		const onLayoutColorChange = (layoutColorMode) => {
+			state.layoutColorMode = layoutColorMode;
+		};
+
+        const addClass = (element, className) => {
             if (element.classList)
                 element.classList.add(className);
             else
                 element.className += ' ' + className;
-        },
-        removeClass(element, className) {
+        };
+
+        const removeClass = (element, className) => {
             if (element.classList)
                 element.classList.remove(className);
             else
                 element.className = element.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
-        },
-        isDesktop() {
+        };
+
+        const isDesktop = () => {
             return window.innerWidth > 1024;
-        },
-        isSidebarVisible() {
-            if (this.isDesktop()) {
-                if (this.layoutMode === 'static')
-                    return !this.staticMenuInactive;
-                else if (this.layoutMode === 'overlay')
-                    return this.overlayMenuActive;
+        };
+
+        const isSidebarVisible = () => {
+            if (isDesktop()) {
+                if (state.layoutMode === 'static')
+                    return !state.staticMenuInactive;
+                else if (state.layoutMode === 'overlay')
+                    return state.overlayMenuActive;
                 else
                     return true;
             }
             else {
                 return true;
             }
-        },
-    },
-    computed: {
-        containerClass() {
+        };
+
+        const containerClass = () => {
             return ['layout-wrapper', {
-                'layout-overlay': this.layoutMode === 'overlay',
-                'layout-static': this.layoutMode === 'static',
-                'layout-static-sidebar-inactive': this.staticMenuInactive && this.layoutMode === 'static',
-                'layout-overlay-sidebar-active': this.overlayMenuActive && this.layoutMode === 'overlay',
-                'layout-mobile-sidebar-active': this.mobileMenuActive,
-				'p-input-filled': this.$appState.inputStyle === 'filled',
-				'p-ripple-disabled': this.$primevue.config.ripple === false
+                'layout-overlay': state.layoutMode === 'overlay',
+                'layout-static': state.layoutMode === 'static',
+                'layout-static-sidebar-inactive': state.staticMenuInactive && state.layoutMode === 'static',
+                'layout-overlay-sidebar-active': state.overlayMenuActive && state.layoutMode === 'overlay',
+                'layout-mobile-sidebar-active': state.mobileMenuActive,
+                'p-input-filled': appState.inputStyle === 'filled',
+                'p-ripple-disabled': primevue.config.ripple === false
             }];
-        },
-        sidebarClass() {
+        };
+
+        const sidebarClass = () => {
             return ['layout-sidebar', {
-                'layout-sidebar-dark': this.layoutColorMode === 'dark',
-                'layout-sidebar-light': this.layoutColorMode === 'light'
+                'layout-sidebar-dark': state.layoutColorMode === 'dark',
+                'layout-sidebar-light': state.layoutColorMode === 'light'
             }];
-        },
-        logo() {
-            return (this.layoutColorMode === 'dark') ? "assets/layout/images/logo-white.svg" : "assets/layout/images/logo.svg";
-        }
-    },
-    beforeUpdate() {
-        if (this.mobileMenuActive)
-            this.addClass(document.body, 'body-overflow-hidden');
-        else
-            this.removeClass(document.body, 'body-overflow-hidden');
+        };
+
+        const logo = () => {
+                return (state.layoutColorMode === 'dark') ? "assets/layout/images/logo-white.svg" : "assets/layout/images/logo.svg";
+        };
+
+        onBeforeUpdate(() => {
+            if (state.mobileMenuActive)
+                addClass(document.body, 'body-overflow-hidden');
+            else
+                removeClass(document.body, 'body-overflow-hidden');
+        });
+
+        return {
+            ...toRefs(state),
+            state,
+            onWrapperClick,
+            onMenuToggle,
+            onSidebarClick,
+            onMenuItemClick,
+            onLayoutChange,
+            onLayoutColorChange,
+            addClass,
+            removeClass,
+            isDesktop,
+            isSidebarVisible,
+            containerClass,
+            sidebarClass,
+            logo,
+        };
     },
     components: {
         'AppTopBar': AppTopBar,
