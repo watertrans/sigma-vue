@@ -9,7 +9,7 @@ import '@fullcalendar/timegrid/main.min.css';
 import './assets/layout/layout.scss';
 import './assets/layout/flags/flags.css';
 
-import { createApp, reactive } from 'vue';
+import { createApp } from 'vue';
 import router from './router';
 import App from './App.vue';
 import PrimeVue from 'primevue/config';
@@ -105,8 +105,6 @@ router.beforeEach(function(to, from, next) {
 
 const app = createApp(App);
 
-app.config.globalProperties.$appState = reactive({ inputStyle: 'outlined' });
-
 app.use(PrimeVue, { ripple: true });
 app.use(ConfirmationService);
 app.use(ToastService);
@@ -195,7 +193,6 @@ app.component('Tree', Tree);
 app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 
-app.provide('appState', app.config.globalProperties.$appState);
 app.provide('toast', app.config.globalProperties.$toast);
 
 app.mount('#app');

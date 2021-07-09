@@ -18,9 +18,6 @@
 		<div class="layout-main">
 			<router-view />
 		</div>
-
-		<AppConfig :layoutMode="layoutMode" :layoutColorMode="layoutColorMode" @layout-change="onLayoutChange" @layout-color-change="onLayoutColorChange"/>
-
 		<AppFooter />
 	</div>
 </template>
@@ -29,26 +26,19 @@
 import AppTopBar from './AppTopbar.vue';
 import AppProfile from './AppProfile.vue';
 import AppMenu from './AppMenu.vue';
-import AppConfig from './AppConfig.vue';
 import AppFooter from './AppFooter.vue';
 import { useRoute } from 'vue-router'
 import { onBeforeUpdate, watch, inject } from 'vue';
 import { reactive, toRefs } from '@vue/reactivity';
-import { usePrimeVue } from 'primevue/config';
 
 export default {
     setup() {
         
-        const primevue = usePrimeVue();
-        const appState = inject('appState');
         const toast = inject('toast');
         const route = useRoute();
 
         const state = reactive({
-            layoutMode: 'static',
-            layoutColorMode: 'dark',
             staticMenuInactive: false,
-            overlayMenuActive: false,
             mobileMenuActive: false,
             menu : [
                 {label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/'},
@@ -151,7 +141,6 @@ export default {
 
         const onWrapperClick = () => {
             if (!state.menuClick) {
-                state.overlayMenuActive = false;
                 state.mobileMenuActive = false;
             }
 
@@ -162,17 +151,7 @@ export default {
             state.menuClick = true;
 
             if (isDesktop()) {
-                if (state.layoutMode === 'overlay') {
-					if(state.mobileMenuActive === true) {
-						state.overlayMenuActive = true;
-					}
-
-                    state.overlayMenuActive = !state.overlayMenuActive;
-					state.mobileMenuActive = false;
-                }
-                else if (state.layoutMode === 'static') {
-                    state.staticMenuInactive = !state.staticMenuInactive;
-                }
+                state.staticMenuInactive = !state.staticMenuInactive;
             }
             else {
                 state.mobileMenuActive = !state.mobileMenuActive;
@@ -187,18 +166,9 @@ export default {
 
         const onMenuItemClick = (event) => {
             if (event.item && !event.item.items) {
-                state.overlayMenuActive = false;
                 state.mobileMenuActive = false;
             }
         };
-
-		const onLayoutChange = (layoutMode) => {
-			state.layoutMode = layoutMode;
-		};
-
-		const onLayoutColorChange = (layoutColorMode) => {
-			state.layoutColorMode = layoutColorMode;
-		};
 
         const addClass = (element, className) => {
             if (element.classList)
@@ -220,12 +190,7 @@ export default {
 
         const isSidebarVisible = () => {
             if (isDesktop()) {
-                if (state.layoutMode === 'static')
-                    return !state.staticMenuInactive;
-                else if (state.layoutMode === 'overlay')
-                    return state.overlayMenuActive;
-                else
-                    return true;
+                return !state.staticMenuInactive;
             }
             else {
                 return true;
@@ -234,25 +199,18 @@ export default {
 
         const containerClass = () => {
             return ['layout-wrapper', {
-                'layout-overlay': state.layoutMode === 'overlay',
-                'layout-static': state.layoutMode === 'static',
-                'layout-static-sidebar-inactive': state.staticMenuInactive && state.layoutMode === 'static',
-                'layout-overlay-sidebar-active': state.overlayMenuActive && state.layoutMode === 'overlay',
-                'layout-mobile-sidebar-active': state.mobileMenuActive,
-                'p-input-filled': appState.inputStyle === 'filled',
-                'p-ripple-disabled': primevue.config.ripple === false
+                'layout-static': true,
+                'layout-static-sidebar-inactive': state.staticMenuInactive,
+                'layout-mobile-sidebar-active': state.mobileMenuActive
             }];
         };
 
         const sidebarClass = () => {
-            return ['layout-sidebar', {
-                'layout-sidebar-dark': state.layoutColorMode === 'dark',
-                'layout-sidebar-light': state.layoutColorMode === 'light'
-            }];
+            return ['layout-sidebar', 'layout-sidebar-dark'];
         };
 
         const logo = () => {
-                return (state.layoutColorMode === 'dark') ? "assets/layout/images/logo-white.svg" : "assets/layout/images/logo.svg";
+                return "assets/layout/images/logo-white.svg";
         };
 
         onBeforeUpdate(() => {
@@ -269,8 +227,6 @@ export default {
             onMenuToggle,
             onSidebarClick,
             onMenuItemClick,
-            onLayoutChange,
-            onLayoutColorChange,
             addClass,
             removeClass,
             isDesktop,
@@ -284,7 +240,6 @@ export default {
         'AppTopBar': AppTopBar,
         'AppProfile': AppProfile,
         'AppMenu': AppMenu,
-        'AppConfig': AppConfig,
         'AppFooter': AppFooter,
     }
 }
