@@ -11,10 +11,12 @@
 
 <script>
 export default {
-
+	data() {
+		return {
+		}
+	},
 }
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
 </style>
